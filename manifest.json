@@ -8,8 +8,9 @@
       "type": "image/png"
     }
   ],
-  "start_url": "hub_tecnomotor_v4.5.html",
+  "start_url": "",
   "background_color": "#f4f7f6",
   "display": "standalone",
   "theme_color": "#00687D"
+
 }
