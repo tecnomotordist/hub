@@ -1,9 +1,9 @@
-const CACHE_NAME = 'tm-hub-v1.2';
+const CACHE_NAME = 'tm-hub-v4.6';
 
 // Ficheiros a serem guardados em cache (opcional, mas ajuda na velocidade)
 const urlsToCache = [
   './',
-  './manifest.json?v=1.2'
+  './manifest.json?v=4.6'
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,3 +38,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
