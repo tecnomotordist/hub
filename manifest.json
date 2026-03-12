@@ -1,6 +1,5 @@
 {
   "short_name": "TM Hub",
-  "name": "Tecnomotor Intelligence Hub",
   "description": "Sistema unificado de mailing e relatórios técnicos Tecnomotor.",
   "icons": [
     {
@@ -20,3 +19,4 @@
   "theme_color": "#00687D",
   "background_color": "#f4f7f6"
 }
+
