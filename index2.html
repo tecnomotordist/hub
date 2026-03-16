@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TM Hub | Tecnomotor</title>
     
-    <link rel="manifest" href="manifest.json?v=4.9">
+    <link rel="manifest" href="manifest.json?v=5.0">
     <meta name="theme-color" content="#00687D">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -36,7 +36,21 @@
             display: flex; justify-content: center;
             line-height: 1.5;
         }
-        .container { width: 100%; max-width: 1200px; }
+        .container { width: 100%; max-width: 1200px; position: relative; }
+        
+        .btn-voltar {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: transparent; color: var(--tm-blue);
+            padding: 8px 16px; border-radius: 6px; border: 1px solid var(--tm-blue);
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            text-decoration: none; transition: 0.3s;
+            font-family: 'Pirulen', sans-serif;
+            margin-bottom: 20px;
+        }
+        .btn-voltar:hover {
+            background: var(--tm-blue); color: #fff;
+        }
+
         .header-brand { text-align: center; margin-bottom: 30px; }
         
         h1, .label-box, .section-title, .btn-processar, .btn-copy, .btn-download { 
@@ -108,9 +122,14 @@
 <body>
 
 <div class="container">
+    
+    <a href="index.html" class="btn-voltar">
+        <span style="margin-right: 6px;">&laquo;</span> VOLTAR AO MENU
+    </a>
+
     <div class="header-brand">
         <h1>TECNOMOTOR</h1>
-        <span class="by">TM Hub v4.9</span>
+        <span class="by">TM Hub v5.0</span>
     </div>
 
     <div class="card">
@@ -187,7 +206,7 @@
 
 <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=4.9').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=5.0').then(reg => {
             reg.update();
             console.log("Service Worker ativo!");
         });
@@ -204,7 +223,7 @@
         const fileC = document.getElementById('fileCadastro').files[0];
         if (!fileV || !fileC) return alert("Selecione os dois arquivos.");
 
-        document.getElementById('msgStatus').innerText = "⏳ Processando Hub v4.9...";
+        document.getElementById('msgStatus').innerText = "⏳ Processando Hub v5.0...";
 
         try {
             const dataV = await ler(fileV);
