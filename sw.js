@@ -1,9 +1,13 @@
-const CACHE_NAME = 'tm-hub-v4.7';
+const CACHE_NAME = 'tm-hub-v5.0';
 
-// Ficheiros a serem guardados em cache (opcional, mas ajuda na velocidade)
+// Ficheiros a serem guardados em cache para funcionar offline e carregar a nova fonte
 const urlsToCache = [
   './',
-  './manifest.json?v=4.7'
+  './index.html',
+  './index2.html',
+  './index3.html',
+  './pirulen.ttf',
+  './manifest.json?v=5.0'
 ];
 
 self.addEventListener('install', (event) => {
@@ -31,6 +35,7 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
+// Estratégia Network First: Tenta a internet primeiro. Se falhar, usa o cache.
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).catch(() => {
@@ -38,5 +43,3 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-
-
