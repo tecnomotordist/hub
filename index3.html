@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Atendimento</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        @font-face {
+            font-family: 'Pirulen';
+            src: url('pirulen.ttf') format('truetype');
+        }
+
+        * { box-sizing: border-box; }
+        :root {
+            --tm-blue: #00687D; 
+            --tm-red: #e30613;
+            --bg: #f8fafb;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+            line-height: 1.5;
+        }
+        .container { width: 100%; max-width: 1200px; position: relative; }
+        
+        .btn-voltar {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: transparent; color: var(--tm-blue);
+            padding: 8px 16px; border-radius: 6px; border: 1px solid var(--tm-blue);
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            text-decoration: none; transition: 0.3s;
+            font-family: 'Pirulen', sans-serif;
+            margin-bottom: 20px;
+        }
+        .btn-voltar:hover {
+            background: var(--tm-blue); color: #fff;
+        }
+
+        .header-brand { text-align: center; margin-bottom: 30px; }
+        
+        h1, .label-box, .section-title, .btn-processar { 
+            font-family: 'Pirulen', sans-serif; 
+            letter-spacing: 1.5px;
+        }
+        
+        h1 { font-size: 26px; color: var(--tm-blue); margin: 0; text-transform: uppercase; }
+        .by { display: block; font-size: 10px; color: var(--tm-blue); margin-top: 5px; opacity: 0.7; font-weight: bold; }
+        .card {
+            background: var(--card); padding: 30px; border-radius: 12px;
+            margin-bottom: 25px; border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        label { 
+            display: block; font-size: 11px; margin-bottom: 8px; 
+            color: var(--tm-blue); font-weight: 600; text-transform: uppercase;
+        }
+        input[type="file"] { 
+            width: 100%; padding: 12px; margin-bottom: 5px; border-radius: 8px; 
+            border: 1px solid var(--border); background: #fff; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .status { text-align: center; font-weight: 600; margin-top: 15px; color: #16a34a; font-size: 14px; }
+        .section-title { 
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: var(--tm-blue); margin: 40px 0 15px 0; 
+            border-bottom: 2px solid var(--tm-blue); padding-bottom: 8px; text-transform: uppercase;
+        }
+        .badge-periodo {
+            background: #e0f2fe; color: var(--tm-blue); padding: 4px 10px;
+            border-radius: 6px; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 600; letter-spacing: normal;
+        }
+        
+        @media (min-width: 769px) {
+            .grid-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+            .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        }
+        @media (max-width: 768px) {
+            .grid-kpis, .grid-charts { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        }
+
+        .box-result { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .box-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .label-box { font-size: 10px; color: var(--tm-blue); font-weight: 700; }
+        .label-alert { color: var(--tm-red); }
+        .contador { display: block; font-size: 28px; margin-top: 5px; font-weight: 700; color: var(--text-main); font-family: 'Inter', sans-serif; }
+        .destaque { color: var(--tm-blue); font-weight: 700; }
+
+        .table-card { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .table-scroll { overflow-x: auto; max-height: 450px; border: 1px solid var(--border); margin-top: 15px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Inter', sans-serif; }
+        
+        th { 
+            background: #f1f5f9; color: var(--tm-blue); 
+            font-size: 10px; padding: 12px; text-align: left; 
+            border-bottom: 2px solid var(--border); position: sticky; top: 0;
+            z-index: 10; font-family: 'Pirulen', sans-serif; letter-spacing: 1px;
+        }
+        
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; color: #334155; }
+        tr:hover { background: #f8fafc; }
+
+        .tooltip-container { position: relative; display: inline-block; cursor: help; }
+        .tooltip-icon {
+            width: 18px; height: 18px; background: #e2e8f0; color: #64748b;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: bold; transition: 0.3s; font-family: 'Inter', sans-serif;
+        }
+        .tooltip-container:hover .tooltip-icon { background: var(--tm-blue); color: #fff; }
+        .tooltip-text {
+            visibility: hidden; width: 220px; background-color: var(--text-main);
+            color: #fff; text-align: center; border-radius: 6px; padding: 10px;
+            position: absolute; z-index: 9999; top: 130%; right: 0;
+            font-size: 10px; opacity: 0; transition: opacity 0.3s; font-family: 'Inter', sans-serif;
+            font-weight: normal; text-transform: none; letter-spacing: normal; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+        .text-lg { font-size: 14px; }
+        .text-sm { font-size: 11px; }
+        .text-xs { font-size: 9px; }
+        .text-gray-500 { color: var(--text-muted); }
+        .text-gray-400 { color: #94a3b8; }
+        .font-normal { font-weight: 400; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-green-600 { color: #16a34a; }
+        .text-yellow-600 { color: #d97706; }
+        .text-red-500 { color: var(--tm-red); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <a href="index.html" class="btn-voltar">
+        <span style="margin-right: 6px;">&laquo;</span> VOLTAR AO MENU
+    </a>
+
+    <div class="header-brand">
+        <h1>DASHBOARD DE ATENDIMENTO</h1>
+        <span class="by">Análise de Eficiência e Qualidade</span>
+    </div>
+
+    <div class="card">
+        <label>1. Carregar Relatório de Atendimentos (.csv ou .xlsx)</label>
+        <input type="file" id="fileUpload" accept=".csv, .xlsx" onchange="handleFileUpload(event)">
+        <div id="fileName" class="status" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Nenhum arquivo processado ainda.</div>
+    </div>
+
+    <div id="dashboardContainer" style="display:none;">
+        
+        <div class="section-title">
+            <span>📊 Visão Geral da Operação</span>
+            <span class="badge-periodo">Período: <span id="displayPeriodo">Calculando...</span></span>
+        </div>
+
+        <div class="grid-kpis">
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box">TOTAL DE ATENDIMENTOS</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Quantidade total de todos os chats realizados pela equipa no período selecionado.</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiTotal">0</span>
+            </div>
+
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box">TOTAL DE AVALIAÇÕES</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Número de atendimentos onde o cliente respondeu ao questionário de satisfação com uma nota.</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiTotalAvaliacoes">0</span>
+            </div>
+
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box">TAXA DE RESPOSTA</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Percentual de clientes atendidos que deixaram uma nota (Avaliações ÷ Total).</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiTaxaResposta">0%</span>
+            </div>
+
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box" style="color: #16a34a;">NOTA MÉDIA (CSAT)</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Média das notas de satisfação (1 a 5). Reflete a qualidade geral do atendimento.</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiCsat" style="color: #16a34a;">0.0</span>
+            </div>
+        </div>
+
+        <div class="grid-kpis" style="margin-bottom: 30px;">
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box" style="color: #d97706;">TME MÉDIO (ESPERA)</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Tempo Médio de Espera. Indica quanto tempo, em média, o cliente aguardou na fila.</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiTme" style="font-size: 24px;">0</span>
+            </div>
+
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box label-alert">TMA MÉDIO (ATEND.)</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Tempo Médio de Atendimento. Duração média da conversa, do primeiro "Olá" até o encerramento.</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiTma" style="font-size: 24px;">0</span>
+            </div>
+
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box" style="color: #16a34a;">EXCELÊNCIA (NOTA 5)</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Quantidade absoluta de clientes que avaliaram o atendimento com a nota máxima (5 estrelas).</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiNotas5">0</span>
+            </div>
+
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box label-alert">ALERTA (NOTAS 1 A 3)</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Atenção: Quantidade de avaliações críticas ou medianas (1, 2 ou 3 estrelas).</div>
+                    </div>
+                </div>
+                <span class="contador" id="kpiNotasBaixas">0</span>
+            </div>
+        </div>
+
+        <div class="section-title">📈 Desempenho em Gráficos</div>
+        <div class="grid-charts">
+            <div class="card">
+                <div class="box-header">
+                    <span class="label-box">VOLUME DE ATENDIMENTOS</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Compara quem realizou mais atendimentos no período. Útil para medir o volume entregue pela equipa.</div>
+                    </div>
+                </div>
+                <canvas id="chartVolume"></canvas>
+            </div>
+            
+            <div class="card">
+                <div class="box-header">
+                    <span class="label-box">TEMPOS: ESPERA X ATENDIMENTO</span>
+                    <div class="tooltip-container">
+                        <div class="tooltip-icon">?</div>
+                        <div class="tooltip-text">Compara rapidez de aceite (Amarelo) vs agilidade de resolução (Vermelho). TME alto = cliente aguardando; TMA alto = chat demorado.</div>
+                    </div>
+                </div>
+                <canvas id="chartTempos"></canvas>
+            </div>
+        </div>
+
+        <div class="section-title">🏆 Matriz de Resultados (Ranking)</div>
+        <div class="table-card">
+            <div class="box-header">
+                <span class="label-box">DESEMPENHO POR ATENDENTE</span>
+                <div class="tooltip-container">
+                    <div class="tooltip-icon">?</div>
+                    <div class="tooltip-text">Tabela completa. Ordenada por quem atendeu mais clientes. Os tempos já exibem as horas entre parênteses.</div>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="border-top-left-radius: 6px;">ATENDENTE</th>
+                            <th>ATENDIMENTOS</th>
+                            <th>NOTA MÉDIA</th>
+                            <th>TME (MIN/H)</th>
+                            <th style="border-top-right-radius: 6px;">TMA (MIN/H)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-title" style="color: var(--tm-red); border-bottom-color: var(--tm-red);">
+            <span>⚠️ Alertas e Auditoria de Casos Críticos</span>
+        </div>
+        
+        <div class="grid-charts">
+            
+            <div class="table-card" style="margin-bottom: 0; padding-top: 45px; position: relative;">
+                <div class="absolute top-4 left-4"><h3 class="label-box" style="font-size: 13px;">AVALIAÇÕES CRÍTICAS (NOTAS ≤ 3)</h3></div>
+                <div class="absolute top-4 right-4 tooltip-container">
+                    <div class="tooltip-icon">?</div>
+                    <div class="tooltip-text">Lista de protocolos com nota menor ou igual a 3. Ideal para auditoria e feedback ao atendente.</div>
+                </div>
+                <div class="table-scroll mt-0">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="border-top-left-radius: 6px;">PROTOCOLO</th>
+                                <th>ATENDENTE</th>
+                                <th style="border-top-right-radius: 6px;">NOTA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyAlertasNotas">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-card" style="margin-bottom: 0; padding-top: 45px; position: relative;">
+                <div class="absolute top-4 left-4"><h3 class="label-box" style="font-size: 13px;">ESPERA EXCESSIVA (TME > 1 HORA)</h3></div>
+                <div class="absolute top-4 right-4 tooltip-container">
+                    <div class="tooltip-icon">?</div>
+                    <div class="tooltip-text">Lista de protocolos em que o cliente aguardou mais de 60 minutos na fila antes do primeiro contato.</div>
+                </div>
+                <div class="table-scroll mt-0">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="border-top-left-radius: 6px;">PROTOCOLO</th>
+                                <th>ATENDENTE</th>
+                                <th style="border-top-right-radius: 6px;">TME (HORAS)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyAlertasTme">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let chartVol, chartTemposBar;
+
+    function parseTimeToMinutes(timeStr) {
+        if (!timeStr) return null;
+        const regex = /(\d+)h\s+(\d+)m\s+(\d+)s/;
+        const match = timeStr.match(regex);
+        if (match) {
+            const hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const seconds = parseInt(match[3], 10);
+            return (hours * 60) + minutes + (seconds / 60);
+        }
+        return null;
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        document.getElementById('fileName').innerHTML = "<span style='color: #16a34a;'>✅ Arquivo carregado: " + file.name + "</span>";
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            const json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
+            processData(json);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function processData(data) {
+        let totalAtendimentos = 0;
+        let sumCsat = 0, countCsat = 0;
+        let sumTme = 0, countTme = 0;
+        let sumTma = 0, countTma = 0;
+        
+        let minDate = null;
+        let maxDate = null;
+
+        const atendentesData = {};
+        const notasDistribution = {1:0, 2:0, 3:0, 4:0, 5:0};
+        
+        // Listas para os alertas (Auditoria)
+        const alertasNotas = [];
+        const alertasTme = [];
+
+        data.forEach(row => {
+            const getCol = (name) => row[Object.keys(row).find(key => key && key.toLowerCase().includes(name.toLowerCase()))];
+            
+            const atendente = getCol('Atendente');
+            const tempoEspera = getCol('Tempo de espera');
+            const tempoAtendimento = getCol('Tempo de atendimento');
+            const avaliacao = getCol('Avaliação');
+            
+            // Procura a coluna "Protocolo". Caso não exista, assume "#" (ID do excel)
+            const protocolo = getCol('Protocolo') || getCol('#') || "Não Identificado";
+            
+            const dataInicioStr = getCol('Inicio do atendimento') || getCol('Fim do atendimento');
+
+            if(!atendente) return;
+            totalAtendimentos++;
+
+            if (dataInicioStr && typeof dataInicioStr === 'string') {
+                const dateMatch = dataInicioStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                if (dateMatch) {
+                    const d = parseInt(dateMatch[1], 10);
+                    const m = parseInt(dateMatch[2], 10) - 1; 
+                    const y = parseInt(dateMatch[3], 10);
+                    const dateObj = new Date(y, m, d);
+
+                    if (!minDate || dateObj < minDate) minDate = dateObj;
+                    if (!maxDate || dateObj > maxDate) maxDate = dateObj;
+                }
+            }
+
+            const tmeMin = parseTimeToMinutes(tempoEspera);
+            const tmaMin = parseTimeToMinutes(tempoAtendimento);
+
+            if(tmeMin !== null) { 
+                sumTme += tmeMin; 
+                countTme++; 
+                // REGISTO DE ALERTA TME > 60 MINUTOS
+                if (tmeMin > 60) {
+                    alertasTme.push({ protocolo: protocolo, atendente: atendente, tme: tmeMin });
+                }
+            }
+            if(tmaMin !== null) { sumTma += tmaMin; countTma++; }
+
+            let nota = null;
+            if(avaliacao && avaliacao !== 'S/A') {
+                nota = parseFloat(avaliacao);
+                if(!isNaN(nota)) {
+                    if (nota > 5) nota = 5; 
+                    sumCsat += nota;
+                    countCsat++;
+                    if(notasDistribution[nota] !== undefined) notasDistribution[nota]++;
+                    
+                    // REGISTO DE ALERTA NOTA <= 3
+                    if (nota <= 3) {
+                        alertasNotas.push({ protocolo: protocolo, atendente: atendente, nota: nota });
+                    }
+                }
+            }
+
+            if(!atendentesData[atendente]) {
+                atendentesData[atendente] = { qtd: 0, sumTme: 0, sumTma: 0, sumNota: 0, countNota: 0 };
+            }
+            
+            atendentesData[atendente].qtd++;
+            if(tmeMin !== null) atendentesData[atendente].sumTme += tmeMin;
+            if(tmaMin !== null) atendentesData[atendente].sumTma += tmaMin;
+            if(nota !== null) {
+                atendentesData[atendente].sumNota += nota;
+                atendentesData[atendente].countNota++;
+            }
+        });
+
+        let periodoGerado = "Não identificado";
+        if (minDate && maxDate) {
+            const formatDate = (d) => String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+            if (minDate.getTime() === maxDate.getTime()) {
+                periodoGerado = formatDate(minDate);
+            } else {
+                periodoGerado = `${formatDate(minDate)} a ${formatDate(maxDate)}`;
+            }
+        }
+
+        updateDashboard(totalAtendimentos, sumCsat, countCsat, sumTme, countTme, sumTma, countTma, atendentesData, notasDistribution, periodoGerado, alertasNotas, alertasTme);
+    }
+
+    function updateDashboard(total, sumCsat, countCsat, sumTme, countTme, sumTma, countTma, atendentesData, notasDistribution, periodoGerado, alertasNotas, alertasTme) {
+        
+        document.getElementById('displayPeriodo').innerText = periodoGerado;
+        document.getElementById('dashboardContainer').style.display = 'block';
+
+        const taxaResposta = total > 0 ? ((countCsat / total) * 100).toFixed(1) : 0;
+        const notas5 = notasDistribution[5] || 0;
+        // Alertas de bloco: agora soma notas 1, 2 e 3
+        const notasBaixas = (notasDistribution[1] || 0) + (notasDistribution[2] || 0) + (notasDistribution[3] || 0);
+
+        const tmeAvg = countTme > 0 ? (sumTme / countTme) : 0;
+        const tmaAvg = countTma > 0 ? (sumTma / countTma) : 0;
+
+        document.getElementById('kpiTotal').innerText = total;
+        document.getElementById('kpiTotalAvaliacoes').innerText = countCsat;
+        document.getElementById('kpiTaxaResposta').innerText = taxaResposta + '%';
+        document.getElementById('kpiCsat').innerText = countCsat > 0 ? (sumCsat / countCsat).toFixed(2) : "N/A";
+        
+        document.getElementById('kpiTme').innerHTML = tmeAvg > 0 ? `${tmeAvg.toFixed(1)} <span class="text-lg text-gray-500">min</span> <span class="text-sm text-gray-400 font-normal">(${(tmeAvg / 60).toFixed(1)}h)</span>` : "0";
+        document.getElementById('kpiTma').innerHTML = tmaAvg > 0 ? `${tmaAvg.toFixed(1)} <span class="text-lg text-gray-500">min</span> <span class="text-sm text-gray-400 font-normal">(${(tmaAvg / 60).toFixed(1)}h)</span>` : "0";
+        
+        document.getElementById('kpiNotas5').innerText = notas5;
+        document.getElementById('kpiNotasBaixas').innerText = notasBaixas;
+
+        const atendentesArray = Object.keys(atendentesData).map(name => {
+            const d = atendentesData[name];
+            return {
+                nome: name,
+                qtd: d.qtd,
+                tmeAvg: d.qtd > 0 ? (d.sumTme / d.qtd) : 0,
+                tmaAvg: d.qtd > 0 ? (d.sumTma / d.qtd) : 0,
+                notaAvg: d.countNota > 0 ? (d.sumNota / d.countNota) : 0
+            };
+        }).sort((a, b) => b.qtd - a.qtd);
+
+        renderCharts(atendentesArray);
+        renderTable(atendentesArray);
+        renderAlertas(alertasNotas, alertasTme);
+    }
+
+    function renderCharts(atendentesArray) {
+        const labels = atendentesArray.map(a => a.nome);
+        const qtdData = atendentesArray.map(a => a.qtd);
+        const tmeData = atendentesArray.map(a => a.tmeAvg.toFixed(1));
+        const tmaData = atendentesArray.map(a => a.tmaAvg.toFixed(1));
+
+        if(chartVol) chartVol.destroy();
+        if(chartTemposBar) chartTemposBar.destroy();
+
+        const ctxVol = document.getElementById('chartVolume').getContext('2d');
+        chartVol = new Chart(ctxVol, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Atendimentos Realizados',
+                    data: qtdData,
+                    backgroundColor: '#00687D',
+                    borderRadius: 4
+                }]
+            }
+        });
+
+        const ctxTempos = document.getElementById('chartTempos').getContext('2d');
+        chartTemposBar = new Chart(ctxTempos, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'TME (Espera - Min)',
+                        data: tmeData,
+                        backgroundColor: '#d97706',
+                    },
+                    {
+                        label: 'TMA (Atendimento - Min)',
+                        data: tmaData,
+                        backgroundColor: '#e30613',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { position: 'top' } }
+            }
+        });
+    }
+
+    function renderTable(atendentesArray) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        atendentesArray.forEach(atendente => {
+            const tr = document.createElement('tr');
+            
+            const notaDisplay = atendente.notaAvg > 0 ? atendente.notaAvg.toFixed(2) : '<span class="text-gray-400">Sem nota</span>';
+            
+            const tmeHours = (atendente.tmeAvg / 60).toFixed(1);
+            const tmaHours = (atendente.tmaAvg / 60).toFixed(1);
+
+            tr.innerHTML = `
+                <td class="font-semibold">${atendente.nome}</td>
+                <td>${atendente.qtd}</td>
+                <td class="font-bold text-green-600">${notaDisplay}</td>
+                <td class="text-yellow-600 font-semibold">${atendente.tmeAvg.toFixed(1)} <span class="text-xs text-gray-400 font-normal">(${tmeHours}h)</span></td>
+                <td class="text-red-500 font-semibold">${atendente.tmaAvg.toFixed(1)} <span class="text-xs text-gray-400 font-normal">(${tmaHours}h)</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Função para renderizar as tabelas de auditoria (Novidade solicitada pela Supervisão)
+    function renderAlertas(alertasNotas, alertasTme) {
+        // Tabela 1: Notas <= 3
+        const tbodyNotas = document.getElementById('bodyAlertasNotas');
+        tbodyNotas.innerHTML = '';
+        
+        if(alertasNotas.length === 0) {
+            tbodyNotas.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#16a34a; font-weight:bold;">Nenhum caso crítico registado! 🎉</td></tr>';
+        } else {
+            // Ordena da pior nota (1) para a melhor (3)
+            alertasNotas.sort((a, b) => a.nota - b.nota).forEach(item => {
+                tbodyNotas.innerHTML += `
+                    <tr>
+                        <td class="font-bold" style="color: var(--text-muted);">${item.protocolo}</td>
+                        <td class="font-semibold">${item.atendente}</td>
+                        <td class="font-bold" style="color: var(--tm-red); font-size: 14px;">${item.nota} <span style="font-size:10px">⭐️</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Tabela 2: TME > 1h
+        const tbodyTme = document.getElementById('bodyAlertasTme');
+        tbodyTme.innerHTML = '';
+
+        if(alertasTme.length === 0) {
+            tbodyTme.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#16a34a; font-weight:bold;">Nenhum cliente esperou mais de 1h! 🎉</td></tr>';
+        } else {
+            // Ordena do maior tempo de espera para o menor
+            alertasTme.sort((a, b) => b.tme - a.tme).forEach(item => {
+                const horas = (item.tme / 60).toFixed(1) + 'h';
+                tbodyTme.innerHTML += `
+                    <tr>
+                        <td class="font-bold" style="color: var(--text-muted);">${item.protocolo}</td>
+                        <td class="font-semibold">${item.atendente}</td>
+                        <td class="font-bold text-yellow-600">${horas} <span style="font-size:10px; color:#94a3b8; font-weight:normal">(${item.tme.toFixed(0)} min)</span></td>
+                    </tr>
+                `;
+            });
+        }
+    }
+</script>
+</body>
+</html>
