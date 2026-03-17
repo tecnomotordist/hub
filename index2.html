@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TM Hub | Tecnomotor</title>
+    
+    <link rel="manifest" href="manifest.json?v=5.0">
+    <meta name="theme-color" content="#00687D">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+
+        :root {
+            --tm-blue: #00687D; 
+            --tm-red: #e30613;
+            --bg: #f8fafb;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+            line-height: 1.5;
+        }
+
+        .container { width: 100%; max-width: 1300px; }
+
+        .header-brand { text-align: center; margin-bottom: 30px; }
+        
+        h1, .label-box, .section-title, .btn-processar, .btn-copy, .btn-download { 
+            font-family: 'Orbitron', sans-serif; 
+            letter-spacing: 1.5px;
+        }
+
+        h1 { font-size: 26px; color: var(--tm-blue); margin: 0; text-transform: uppercase; }
+        .by { display: block; font-size: 10px; color: var(--tm-blue); margin-top: 5px; opacity: 0.7; font-weight: bold; }
+
+        .card {
+            background: var(--card); padding: 30px; border-radius: 12px;
+            margin-bottom: 25px; border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        label { 
+            display: block; font-size: 11px; margin-bottom: 8px; 
+            color: var(--tm-blue); font-weight: 600; text-transform: uppercase;
+        }
+
+        input[type="file"] { 
+            width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; 
+            border: 1px solid var(--border); background: #fff; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-processar {
+            width: 100%; padding: 18px; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer; transition: 0.3s; color: white;
+            background: var(--tm-blue); font-weight: 700; text-transform: uppercase;
+            border-bottom: 4px solid #004d5d;
+        }
+        .btn-processar:hover { background: #005668; transform: translateY(-2px); }
+
+        .status { text-align: center; font-weight: 600; margin-top: 15px; color: #16a34a; font-size: 14px; }
+
+        .section-title { 
+            font-size: 13px; color: var(--tm-blue); margin: 40px 0 15px 0; 
+            border-bottom: 2px solid var(--tm-blue); padding-bottom: 8px; 
+        }
+        
+        .grid-mailing { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box-result { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 8px; }
+        .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .label-box { font-size: 10px; color: var(--tm-red); font-weight: 700; }
+        
+        .btn-copy { 
+            background: #475569; color: white; border: none; padding: 6px 14px; 
+            border-radius: 5px; cursor: pointer; font-size: 9px; font-weight: 700; 
+        }
+
+        textarea { 
+            width: 100%; height: 110px; border: 1px solid var(--border); border-radius: 8px; 
+            padding: 12px; font-family: 'Inter', sans-serif; font-size: 13px; resize: none; 
+            background: #fcfcfc; color: #444; line-height: 1.6;
+        }
+
+        .contador { display: block; font-size: 12px; margin-top: 10px; font-weight: 500; color: var(--text-muted); }
+        .destaque { color: var(--tm-blue); font-weight: 700; }
+
+        .table-card { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .table-scroll { overflow-x: auto; max-height: 450px; border: 1px solid var(--border); margin-top: 15px; border-radius: 4px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'Inter', sans-serif; }
+        
+        th { 
+            background: #f1f5f9; color: var(--tm-blue); 
+            font-size: 8px; padding: 12px; text-align: left; 
+            border-bottom: 2px solid var(--border); position: sticky; top: 0;
+            z-index: 10;
+        }
+        
+        td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; color: #334155; }
+        tr:hover { background: #f8fafc; }
+
+        .btn-download { 
+            background: #16a34a; color: white; border: none; padding: 8px 16px; 
+            border-radius: 6px; font-size: 9px; font-weight: 700; cursor: pointer;
+            border-bottom: 3px solid #117a37;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-brand">
+        <h1>TECNOMOTOR</h1>
+        <span class="by">TM Hub v5.0</span>
+    </div>
+
+    <div class="card">
+        <label>1. Planilha Vendas (Busca compra produto)</label>
+        <input type="file" id="fileVendas" accept=".xlsx, .xls">
+
+        <label>2. Planilha Cadastro (Entrega Técnica)</label>
+        <input type="file" id="fileCadastro" accept=".xlsx, .xls">
+
+        <button class="btn-processar" id="btnMain">PROCESSAR DADOS UNIFICADOS</button>
+        <div id="msgStatus" class="status"></div>
+    </div>
+
+    <div id="resultSection" class="result-section" style="display:none;">
+        <div class="section-title">📧 Mailing de Contatos (Especiais)</div>
+        <div class="grid-mailing">
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box">LISTA TM540 / TM536</span>
+                    <button class="btn-copy" onclick="copy('emailsTM540', this)">COPIAR</button>
+                </div>
+                <textarea id="emailsTM540" readonly></textarea>
+                <span class="contador">Encontrados: <span id="c540" class="destaque">0</span></span>
+            </div>
+            <div class="box-result">
+                <div class="box-header">
+                    <span class="label-box">LISTA TM547</span>
+                    <button class="btn-copy" onclick="copy('emailsTM547', this)">COPIAR</button>
+                </div>
+                <textarea id="emailsTM547" readonly></textarea>
+                <span class="contador">Encontrados: <span id="c547" class="destaque">0</span></span>
+            </div>
+        </div>
+
+        <div class="section-title">⚙️ Relatórios de Entrega Técnica (Matriz)</div>
+
+        <div class="table-card">
+            <div class="box-header">
+                <span class="label-box" style="color: var(--tm-blue);">MATRIZ: COM VALOR DE ENTREGA</span>
+                <button class="btn-download" onclick="exportar(listaCom, 'Relatorio_Entrega_Com_Valor')">BAIXAR EXCEL</button>
+            </div>
+            <span class="contador">Registros: <span id="countCom" class="destaque">0</span></span>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>VENDEDOR 1</th><th>VENDEDOR 2</th><th>CÓDIGO CLIENTE</th><th>NOME CLIENTE</th><th>EMAIL</th><th>ESTADO</th><th>CIDADE</th><th>COD PRODUTO</th><th>DESCRIÇÃO PRODUTO</th><th>NF</th><th>DATA DE EMISSÃO</th><th>VALOR ENTREGA TÉCNICA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyCom"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="box-header">
+                <span class="label-box" style="color: #64748b;">MATRIZ: VALOR DE ENTREGA ZERO</span>
+                <button class="btn-download" style="background:#64748b; border-color:#334155;" onclick="exportar(listaSem, 'Relatorio_Entrega_Valor_Zero')">BAIXAR EXCEL</button>
+            </div>
+            <span class="contador">Registros: <span id="countSem" class="destaque">0</span></span>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>VENDEDOR 1</th><th>VENDEDOR 2</th><th>CÓDIGO CLIENTE</th><th>NOME CLIENTE</th><th>EMAIL</th><th>ESTADO</th><th>CIDADE</th><th>COD PRODUTO</th><th>DESCRIÇÃO PRODUTO</th><th>NF</th><th>DATA DE EMISSÃO</th><th>VALOR ENTREGA TÉCNICA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodySem"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js?v=5.0').then(reg => {
+            reg.update();
+            console.log("Service Worker ativo!");
+        });
+    }
+
+    let cod540 = new Set(), cod547 = new Set(), codOutros = new Set(), mapaEmails = new Map(), mapaProdutos = new Map();
+    let listaCom = [], listaSem = [];
+    
+    // Nova Ordem dos Cabeçalhos para o Excel (12 colunas)
+    const headers = ["VENDEDOR 1", "VENDEDOR 2", "CÓDIGO CLIENTE", "NOME CLIENTE", "EMAIL", "ESTADO", "CIDADE", "COD PRODUTO", "DESCRIÇÃO PRODUTO", "NF", "DATA DE EMISSÃO", "VALOR ENTREGA TÉCNICA"];
+    const palavrasIgnorar = ["TROCA", "TRANSFERENCIA", "MOSTRUÁRIO", "DEMONSTRAÇÃO", "ATENDIMENTO EM CAMPO"];
+
+    // Função para tratar as datas do Excel (Coluna L)
+    function formatarDataExcel(valor) {
+        if (!valor) return "";
+        if (typeof valor === 'string' && valor.includes('/')) return valor;
+        if (typeof valor === 'number' && valor > 1000) {
+            const dataObjeto = new Date(Math.round((valor - 25569) * 86400 * 1000));
+            const dia = String(dataObjeto.getUTCDate()).padStart(2, '0');
+            const mes = String(dataObjeto.getUTCMonth() + 1).padStart(2, '0');
+            const ano = dataObjeto.getUTCFullYear();
+            return `${dia}/${mes}/${ano}`;
+        }
+        return valor;
+    }
+
+    document.getElementById('btnMain').addEventListener('click', async () => {
+        const fileV = document.getElementById('fileVendas').files[0];
+        const fileC = document.getElementById('fileCadastro').files[0];
+        if (!fileV || !fileC) return alert("Selecione os dois arquivos.");
+
+        document.getElementById('msgStatus').innerText = "⏳ Processando Hub v5.0...";
+
+        try {
+            const dataV = await ler(fileV);
+            const dataC = await ler(fileC);
+
+            cod540.clear(); cod547.clear(); codOutros.clear(); mapaProdutos.clear();
+            let cur = "";
+            
+            dataV.forEach(row => {
+                let codRaw = row[1] ? String(row[1]).trim() : "";
+                let prodRaw = row[3] ? String(row[3]).trim() : ""; 
+                let prodUpper = prodRaw.toUpperCase();
+
+                if (codRaw !== "" && !isNaN(codRaw.replace(',','.'))) cur = codRaw.split('.')[0];
+                
+                if (cur && prodUpper) {
+                    if (prodUpper.includes("TM540") || prodUpper.includes("TM536")) {
+                        cod540.add(cur);
+                    } 
+                    else if (prodUpper.includes("TM547")) {
+                        cod547.add(cur);
+                    } 
+                    else if (/(TM|TD|SATO)\d+/.test(prodUpper)) {
+                        codOutros.add(cur);
+                        
+                        // SEPARAÇÃO: Código do Produto vs Descrição (Divisor '-')
+                        let partes = prodRaw.split('-');
+                        let codProd = partes[0] ? partes[0].trim() : "";
+                        let descProd = partes[1] ? partes[1].trim() : (partes[0] ? "" : "");
+                        
+                        mapaProdutos.set(cur, { cod: codProd, desc: descProd });
+                    }
+                }
+            });
+
+            mapaEmails.clear(); listaCom = []; listaSem = [];
+            
+            dataC.forEach((row, i) => {
+                if (i === 0) return;
+                let cod = row[0] ? String(row[0]).trim().split('.')[0] : "";
+                let email = row[2] ? String(row[2]).trim() : "";
+                let filialH = row[7] ? String(row[7]).trim().toUpperCase() : "";
+                let valorM = row[12] ? parseFloat(String(row[12]).replace(',', '.')) || 0 : 0;
+                
+                // Dados do Produto
+                let dadosProd = mapaProdutos.get(cod) || { cod: "N/A", desc: "NÃO IDENTIFICADO" };
+
+                if (cod && email.includes("@")) mapaEmails.set(cod, email);
+
+                if (filialH.includes("MATRIZ") && codOutros.has(cod)) {
+                    let textoLinha = row.join(" ").toUpperCase();
+                    let deveIgnorar = palavrasIgnorar.some(p => textoLinha.includes(p));
+
+                    if (!deveIgnorar) {
+                        // SEQUÊNCIA FINAL: Vend1, Vend2, Cod Cli, Nome Cli, Email, Estado, Cidade, Cod Prod, Desc Prod, NF, Data Emiss, Valor
+                        const novaLinha = [
+                            row[5],                 // VENDEDOR 1
+                            row[6],                 // VENDEDOR 2
+                            row[0],                 // CÓDIGO CLIENTE
+                            row[1],                 // NOME CLIENTE
+                            row[2],                 // EMAIL
+                            row[3],                 // ESTADO
+                            row[4],                 // CIDADE
+                            dadosProd.cod,          // COD PRODUTO (Novo)
+                            dadosProd.desc,         // DESCRIÇÃO PRODUTO (Novo)
+                            row[9],                 // NF (Coluna J)
+                            formatarDataExcel(row[11]), // Data de Emissão (Coluna L)
+                            valorM                  // VALOR ENTREGA TÉCNICA
+                        ];
+                        valorM > 0 ? listaCom.push(novaLinha) : listaSem.push(novaLinha);
+                    }
+                }
+            });
+
+            exibir();
+            document.getElementById('msgStatus').innerText = "✅ Processamento Concluído!";
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao processar.");
+        }
+    });
+
+    function ler(file) {
+        return new Promise(res => {
+            const reader = new FileReader();
+            reader.onload = e => res(XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type:'array'}).Sheets[XLSX.read(new Uint8Array(e.target.result), {type:'array'}).SheetNames[0]], {header:1}));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    function exibir() {
+        const mail = (set) => Array.from(set).map(c => mapaEmails.get(c)).filter(e => e).join(', ');
+        document.getElementById('emailsTM540').value = mail(cod540);
+        document.getElementById('c540').innerText = document.getElementById('emailsTM540').value ? document.getElementById('emailsTM540').value.split(',').length : 0;
+        document.getElementById('emailsTM547').value = mail(cod547);
+        document.getElementById('c547').innerText = document.getElementById('emailsTM547').value ? document.getElementById('emailsTM547').value.split(',').length : 0;
+        render('bodyCom', 'countCom', listaCom);
+        render('bodySem', 'countSem', listaSem);
+        document.getElementById('resultSection').style.display = 'block';
+    }
+
+    function render(tid, cid, data) {
+        const b = document.getElementById(tid); b.innerHTML = "";
+        document.getElementById(cid).innerText = data.length;
+        data.forEach(r => {
+            const tr = document.createElement('tr');
+            r.forEach(c => { const td = document.createElement('td'); td.innerText = c || ""; tr.appendChild(td); });
+            b.appendChild(tr);
+        });
+    }
+
+    function exportar(data, nome) {
+        const ws = XLSX.utils.aoa_to_sheet([headers].concat(data));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
+        XLSX.writeFile(wb, nome + ".xlsx");
+    }
+
+    function copy(id, btn) {
+        const t = document.getElementById(id); t.select(); navigator.clipboard.writeText(t.value);
+        const o = btn.innerText; btn.innerText = "COPIADO!"; setTimeout(() => btn.innerText = o, 1500);
+    }
+</script>
+</body>
+</html>
